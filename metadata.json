@@ -1,0 +1,6 @@
+{
+  "name": "Mundo Sábila - Tienda Oficial",
+  "description": "Tienda virtual de productos de Aloe Vera 100% natural y productos de belleza con redirección a Mercado Libre, Mercado Pago, panel de administración, soporte en vivo con IA y notificaciones en tiempo real.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
