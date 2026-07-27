@@ -20,3 +20,13 @@ export default defineConfig(() => {
     },
   };
 });
+// vite.config.js
+export default {
+  server: {
+    allowedHosts: [
+      'dglobalconections.com',
+      'www.dglobalconections.com',
+      'localhost',
+    ],
+  },
+}
