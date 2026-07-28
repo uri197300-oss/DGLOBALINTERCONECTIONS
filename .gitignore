@@ -6,13 +6,3 @@ coverage/
 *.log
 .env*
 !.env.example
-# env
-.env
-.env.local
-.env.development.local
-.env.production.local
-.env.production
-
-# build
-dist
-node_modules
