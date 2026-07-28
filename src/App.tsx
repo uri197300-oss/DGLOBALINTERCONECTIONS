@@ -32,6 +32,7 @@ import {
 import {
   AuthModal
 } from './components/AuthModal';
+import { LoraudLogo } from './components/LoraudLogo';
 
 import { 
   Product, 
@@ -568,15 +569,9 @@ export default function App() {
       <footer className="bg-slate-950 text-white border-t border-slate-800 pt-8 text-xs mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-6 pb-8">
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🌱</span>
-              <span className="font-extrabold text-base">Mundo Sábila & Electrónicos</span>
-              <span className="bg-yellow-500/20 text-yellow-400 text-[10px] font-bold px-2 py-0.5 rounded border border-yellow-500/30">
-                ML STORE
-              </span>
-            </div>
-            <p className="text-slate-400 leading-relaxed text-[11px]">
-              Propiedad de URIEL DONAJI LOPEZ RAZO. Tienda virtual oficial especializada en productos de Aloe Vera 100% orgánicos sin aloína ni azúcar añadida, certificación Kosher Pareve y artículos electrónicos gamer.
+            <LoraudLogo size="md" showSubtitle={false} />
+            <p className="text-slate-400 leading-relaxed text-[11px] pt-1">
+              DGlobalConections — Propiedad de URIEL DONAJI LOPEZ RAZO. Tienda virtual oficial especializada en productos de Aloe Vera 100% orgánicos sin aloína ni azúcar añadida, certificación Kosher Pareve y artículos electrónicos gamer.
             </p>
           </div>
 
@@ -609,7 +604,7 @@ export default function App() {
 
         {/* Bottom protection bar */}
         <div className="bg-slate-900 border-t border-slate-800 px-6 py-2.5 flex flex-wrap items-center justify-between text-[10px] text-slate-400 gap-2">
-          <span>© 2026 MUNDO SÁBILA & ELECTRÓNICOS • ML STORE ID: 685476429</span>
+          <span>© 2026 D LORAUD • DGlobalConections • ML STORE ID: 685476429</span>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1 text-yellow-400 font-bold">
               <ShieldCheck className="w-3.5 h-3.5" /> MERCADO PAGO

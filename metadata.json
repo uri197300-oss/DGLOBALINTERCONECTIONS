@@ -1,6 +1,6 @@
 {
-  "name": "Mundo Sábila - Tienda Oficial",
-  "description": "Tienda virtual de productos de Aloe Vera 100% natural y productos de belleza con redirección a Mercado Libre, Mercado Pago, panel de administración, soporte en vivo con IA y notificaciones en tiempo real.",
+  "name": "DGlobalConections",
+  "description": "Tienda virtual oficial D LORAUD / DGlobalConections especializada en productos de Aloe Vera 100% natural, cosmética y productos tecnológicos con integración Mercado Pago, panel de administración y soporte en vivo.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

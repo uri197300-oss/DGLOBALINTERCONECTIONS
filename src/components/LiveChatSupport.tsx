@@ -113,7 +113,7 @@ export const LiveChatSupport: React.FC<LiveChatSupportProps> = ({ isOpen, onClos
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <h3 className="font-extrabold text-sm">Soporte IA Mundo Sábila</h3>
+                <h3 className="font-extrabold text-sm">Soporte IA D LORAUD</h3>
                 <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />
               </div>
               <p className="text-[10px] text-emerald-100">Atención técnica y de compras 24/7</p>

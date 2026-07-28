@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { ADMIN_EMAIL } from '../data/initialData';
 import { RegisteredUser } from '../types';
+import { LoraudLogo } from './LoraudLogo';
 
 interface NavbarProps {
   darkMode: boolean;
@@ -111,22 +112,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           
           {/* Brand Logo & Name */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => onSelectCategory('todos')}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-400 to-yellow-500 text-slate-950 font-black text-xl flex items-center justify-center shadow-lg shadow-yellow-500/10 border border-yellow-300">
-              🌱
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-black text-xl tracking-tighter text-slate-900 dark:text-white uppercase">
-                  Mundo<span className="text-yellow-500 dark:text-yellow-400">Sábila</span>
-                </span>
-                <span className="bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-[10px] font-bold px-1.5 py-0.5 rounded border border-yellow-500/30 uppercase tracking-widest">
-                  ML Store
-                </span>
-              </div>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono tracking-tight leading-none mt-0.5">
-                OFICIAL • ID: 685476429
-              </p>
-            </div>
+            <LoraudLogo size="md" />
           </div>
 
           {/* Search Input Bar */}
