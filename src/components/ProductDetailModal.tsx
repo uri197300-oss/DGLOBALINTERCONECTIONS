@@ -239,13 +239,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
                 <button
                   onClick={() => {
-                    onClose();
-                    onOpenCheckoutWithItem(product);
+                    onAddToCart(product);
                   }}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all"
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  <span>Procesar Pago Directo</span>
+                  <span>Agregar al Carrito</span>
                 </button>
               </div>
 

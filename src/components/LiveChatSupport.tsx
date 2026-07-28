@@ -92,7 +92,7 @@ export const LiveChatSupport: React.FC<LiveChatSupportProps> = ({ isOpen, onClos
       const fallbackMsg: Message = {
         id: `ai-${Date.now()}`,
         sender: 'ai',
-        text: '¡Hola! Para realizar tus compras directamente con garantía total, haz clic en el botón "Comprar en Mercado Libre" de cualquier producto o procesa tu pago directo con Mercado Pago.',
+        text: '¡Hola! Para realizar tus compras con garantía total, haz clic en el botón "Comprar en Mercado Libre" de cualquier producto o agrégalo al carrito de compras.',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, fallbackMsg]);
