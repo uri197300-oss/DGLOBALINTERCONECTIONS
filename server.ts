@@ -18,6 +18,79 @@ const ai = new GoogleGenAI({
   },
 });
 
+// File Storage Setup
+import fs from "fs";
+
+const DATA_DIR = path.join(process.cwd(), "data_store");
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+const PRODUCTS_FILE = path.join(DATA_DIR, "products.json");
+const ORDERS_FILE = path.join(DATA_DIR, "orders.json");
+
+function readJsonFile<T>(filePath: string, fallback: T): T {
+  try {
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, "utf-8");
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.error(`Error reading ${filePath}:`, err);
+  }
+  return fallback;
+}
+
+function writeJsonFile<T>(filePath: string, data: T): void {
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+  } catch (err) {
+    console.error(`Error writing ${filePath}:`, err);
+  }
+}
+
+// Products API Endpoints
+app.get("/api/products", (req, res) => {
+  const products = readJsonFile(PRODUCTS_FILE, null);
+  res.json({ products });
+});
+
+app.put("/api/products", (req, res) => {
+  const { products } = req.body;
+  if (!Array.isArray(products)) {
+    res.status(400).json({ error: "Se requiere un arreglo de productos." });
+    return;
+  }
+  writeJsonFile(PRODUCTS_FILE, products);
+  res.json({ success: true, products });
+});
+
+app.post("/api/products/reset", (req, res) => {
+  const { products } = req.body;
+  if (Array.isArray(products)) {
+    writeJsonFile(PRODUCTS_FILE, products);
+  } else if (fs.existsSync(PRODUCTS_FILE)) {
+    fs.unlinkSync(PRODUCTS_FILE);
+  }
+  res.json({ success: true });
+});
+
+// Orders API Endpoints
+app.get("/api/orders", (req, res) => {
+  const orders = readJsonFile(ORDERS_FILE, null);
+  res.json({ orders });
+});
+
+app.put("/api/orders", (req, res) => {
+  const { orders } = req.body;
+  if (!Array.isArray(orders)) {
+    res.status(400).json({ error: "Se requiere un arreglo de pedidos." });
+    return;
+  }
+  writeJsonFile(ORDERS_FILE, orders);
+  res.json({ success: true, orders });
+});
+
 // System prompt for Mundo Sábila Assistant
 const SYSTEM_PROMPT = `
 Eres el Asistente Virtual Oficial e Inteligente de "Mundo Sábila & Electrónicos", la tienda virtual de productos naturales de Aloe Vera (Propiedad de Miguel Ángel López Balbuena) y electrónicos con enlace oficial a Mercado Libre y Mercado Pago.

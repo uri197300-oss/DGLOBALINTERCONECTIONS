@@ -112,6 +112,105 @@ export default function App() {
   const [logs, setLogs] = useState<ActivityLog[]>(INITIAL_ACTIVITY_LOGS);
   const [notifications, setNotifications] = useState<NotificationAlert[]>(INITIAL_NOTIFICATIONS);
 
+  // Sync products and orders to/from Express backend server
+  useEffect(() => {
+    let isMounted = true;
+
+    const syncProductsFromServer = async () => {
+      try {
+        const res = await fetch('/api/products');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.products) && data.products.length > 0) {
+            if (isMounted) {
+              setProducts(data.products);
+            }
+          } else if (data.products === null) {
+            // Seed server on first run
+            await fetch('/api/products', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ products: INITIAL_PRODUCTS }),
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Error syncing products with server:', err);
+      }
+    };
+
+    syncProductsFromServer();
+    const interval = setInterval(syncProductsFromServer, 3000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const syncOrdersFromServer = async () => {
+      try {
+        const res = await fetch('/api/orders');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.orders) && data.orders.length > 0) {
+            if (isMounted) {
+              setOrders(data.orders);
+            }
+          } else if (data.orders === null) {
+            await fetch('/api/orders', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ orders: INITIAL_ORDERS }),
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Error syncing orders with server:', err);
+      }
+    };
+
+    syncOrdersFromServer();
+    const interval = setInterval(syncOrdersFromServer, 5000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Helpers to persist product/order changes to backend server
+  const saveProductsToServer = async (newProds: Product[]) => {
+    setProducts(newProds);
+    try {
+      localStorage.setItem('dloraud_products', JSON.stringify(newProds));
+      await fetch('/api/products', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ products: newProds }),
+      });
+    } catch (err) {
+      console.error('Error saving products to server:', err);
+    }
+  };
+
+  const saveOrdersToServer = async (newOrders: Order[]) => {
+    setOrders(newOrders);
+    try {
+      localStorage.setItem('dloraud_orders', JSON.stringify(newOrders));
+      await fetch('/api/orders', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orders: newOrders }),
+      });
+    } catch (err) {
+      console.error('Error saving orders to server:', err);
+    }
+  };
+
   // Sync state to localStorage
   useEffect(() => {
     try {
@@ -232,12 +331,14 @@ export default function App() {
       ...newProd,
       id: `prod-${Date.now()}`,
     };
-    setProducts((prev) => [created, ...prev]);
+    const updated = [created, ...products];
+    saveProductsToServer(updated);
     addActivityLog('PRODUCTO_CREADO', `Creación de producto ${created.title} a $${created.price} MXN`, 'inventory');
   };
 
   const handleUpdateProduct = (updatedProd: Product) => {
-    setProducts((prev) => prev.map((p) => (p.id === updatedProd.id ? updatedProd : p)));
+    const updated = products.map((p) => (p.id === updatedProd.id ? updatedProd : p));
+    saveProductsToServer(updated);
     setSelectedProduct((prev) => (prev && prev.id === updatedProd.id ? updatedProd : prev));
     setEditingImageProduct((prev) => (prev && prev.id === updatedProd.id ? updatedProd : prev));
     addActivityLog('PRODUCTO_ACTUALIZADO', `Modificación en ${updatedProd.title} (Precio $${updatedProd.price} MXN)`, 'inventory');
@@ -245,28 +346,36 @@ export default function App() {
 
   const handleDeleteProduct = (productId: string) => {
     const prod = products.find((p) => p.id === productId);
-    setProducts((prev) => prev.filter((p) => p.id !== productId));
+    const updated = products.filter((p) => p.id !== productId);
+    saveProductsToServer(updated);
     setSelectedProduct((prev) => (prev && prev.id === productId ? null : prev));
     setEditingImageProduct((prev) => (prev && prev.id === productId ? null : prev));
     addActivityLog('PRODUCTO_ELIMINADO', `Eliminado del catálogo ID: ${productId} (${prod?.title})`, 'inventory');
   };
 
-  const handleResetProducts = () => {
-    setProducts(INITIAL_PRODUCTS);
+  const handleResetProducts = async () => {
+    saveProductsToServer(INITIAL_PRODUCTS);
+    try {
+      await fetch('/api/products/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ products: INITIAL_PRODUCTS }),
+      });
+    } catch (err) {}
     localStorage.removeItem('dloraud_products');
     addActivityLog('CATALOGO_RESTABLECIDO', 'Catálogo de productos restablecido a valores por defecto', 'inventory');
   };
 
   // Order Handlers
   const handleSuccessOrder = (newOrder: Order) => {
-    setOrders((prev) => [newOrder, ...prev]);
+    const updated = [newOrder, ...orders];
+    saveOrdersToServer(updated);
     addActivityLog('PEDIDO_CREADO', `Nuevo pedido #${newOrder.id} por $${newOrder.total} MXN mediante ${newOrder.paymentMethod}`, 'order');
   };
 
   const handleUpdateOrderStatus = (orderId: string, status: OrderStatus) => {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status } : o))
-    );
+    const updated = orders.map((o) => (o.id === orderId ? { ...o, status } : o));
+    saveOrdersToServer(updated);
     addActivityLog('ESTADO_PEDIDO', `Pedido #${orderId} actualizado a estado "${status.toUpperCase()}"`, 'order');
   };
 
