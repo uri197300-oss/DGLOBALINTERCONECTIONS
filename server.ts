@@ -2,14 +2,13 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import { GoogleGenAI } from "@google/genai";
-import { createServer as createViteServer } from "vite";
 import "dotenv/config";
 
 const app = express();
 app.set("trust proxy", 1);
 app.use(express.json());
 
-// CORS manual sin librería extra
+// CORS
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -26,7 +25,7 @@ const ai = new GoogleGenAI({
   httpOptions: { headers: { "User-Agent": "aistudio-build" } },
 });
 
-const SYSTEM_PROMPT = `Eres el Asistente Virtual Oficial de "Mundo Sábila & Electrónicos"...`; // pega tu prompt completo aquí
+const SYSTEM_PROMPT = `Eres el Asistente Virtual Oficial de "Mundo Sábila & Electrónicos"... PEGA AQUÍ TU PROMPT COMPLETO`;
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
@@ -41,10 +40,10 @@ app.post("/api/chat", async (req, res) => {
       return res.json({ reply: "¡Hola! Bienvenido a Mundo Sábila. Estoy listo para ayudarte con la Pulpa Natural libre de aloína y tus compras con Mercado Pago." });
     }
 
-    const contents = [];
+    const contents: any[] = [];
     if (Array.isArray(history)) {
       for (const m of history) {
-        contents.push({ role: m.role === "user"? "user" : "model", parts: [{ text: m.text }] });
+        contents.push({ role: m.role === "user" ? "user" : "model", parts: [{ text: m.text }] });
       }
     }
     contents.push({ role: "user", parts: [{ text: message }] });
@@ -55,7 +54,7 @@ app.post("/api/chat", async (req, res) => {
       config: { systemInstruction: SYSTEM_PROMPT, temperature: 0.7 },
     });
 
-    res.json({ reply: response.text || "Disculpa, no pude generar respuesta." });
+    res.json({ reply: (response as any).text || "Disculpa, no pude generar respuesta." });
   } catch (e) {
     console.error(e);
     res.json({ reply: "Soporte Mundo Sábila: compras 100% seguras con Mercado Pago. ¿Te ayudo con pulpa sin aloína o tu pedido?" });
@@ -64,6 +63,8 @@ app.post("/api/chat", async (req, res) => {
 
 async function startServer() {
   if (!isProduction) {
+    // Solo en desarrollo cargamos vite, en producción no existe
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({ server: { middlewareMode: true }, appType: "custom" });
     app.use(vite.middlewares);
   } else {
@@ -74,11 +75,13 @@ async function startServer() {
         if (req.path.startsWith("/api")) return res.status(404).json({ error: "Not found" });
         res.sendFile(path.join(distPath, "index.html"));
       });
+    } else {
+      console.log("⚠️ dist no encontrado:", distPath);
     }
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`✅ Mundo Sábila listo en puerto ${PORT}`);
+    console.log(`✅ Mundo Sábila listo en puerto ${PORT} - ${isProduction ? 'PROD' : 'DEV'}`);
   });
 }
 
