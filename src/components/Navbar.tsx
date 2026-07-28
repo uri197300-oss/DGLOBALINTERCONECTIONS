@@ -22,8 +22,6 @@ interface NavbarProps {
   setDarkMode: (value: boolean) => void;
   isAdmin: boolean;
   setIsAdmin: (value: boolean) => void;
-  cartCount: number;
-  onOpenCart: () => void;
   onOpenAdmin: () => void;
   onOpenChat: () => void;
   unreadNotifications: number;
@@ -42,8 +40,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   setDarkMode,
   isAdmin,
   setIsAdmin,
-  cartCount,
-  onOpenCart,
   onOpenAdmin,
   onOpenChat,
   unreadNotifications,
@@ -199,20 +195,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="hidden sm:inline">Panel Admin</span>
               </button>
             )}
-
-            {/* Shopping Cart Drawer Button */}
-            <button
-              onClick={onOpenCart}
-              className="relative flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm shadow-md shadow-emerald-600/20 transition-all"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              <span className="hidden sm:inline">Carrito</span>
-              {cartCount > 0 && (
-                <span className="bg-white text-emerald-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
-                  {cartCount}
-                </span>
-              )}
-            </button>
           </div>
         </div>
 

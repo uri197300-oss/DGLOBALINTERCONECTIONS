@@ -19,8 +19,6 @@ import { Product, Review } from '../types';
 interface ProductDetailModalProps {
   product: Product | null;
   onClose: () => void;
-  onAddToCart: (product: Product) => void;
-  onOpenCheckoutWithItem: (product: Product) => void;
   reviews: Review[];
   onAddReview: (review: Omit<Review, 'id' | 'date' | 'helpfulCount'>) => void;
   onEditImage?: (product: Product) => void;
@@ -30,8 +28,6 @@ interface ProductDetailModalProps {
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   product,
   onClose,
-  onAddToCart,
-  onOpenCheckoutWithItem,
   reviews,
   onAddReview,
   onEditImage,
@@ -225,27 +221,17 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 </div>
               </div>
 
-              {/* Primary Action Buttons */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              {/* Primary Action Button - Mercado Libre Direct Link */}
+              <div className="pt-2">
                 <a
                   href={product.mercadoLibreUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold py-3.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-md transition-all text-center"
+                  className="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-black py-4 px-6 rounded-2xl text-base flex items-center justify-center gap-2.5 shadow-xl shadow-yellow-500/20 transition-all text-center uppercase tracking-wide hover:scale-[1.01]"
                 >
                   <span>Comprar en Mercado Libre</span>
-                  <ExternalLink className="w-4 h-4" />
+                  <ExternalLink className="w-5 h-5" />
                 </a>
-
-                <button
-                  onClick={() => {
-                    onAddToCart(product);
-                  }}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all"
-                >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>Agregar al Carrito</span>
-                </button>
               </div>
 
             </div>

@@ -15,9 +15,6 @@ import {
   ProductDetailModal 
 } from './components/ProductDetailModal';
 import { 
-  CheckoutModal 
-} from './components/CheckoutModal';
-import { 
   NotificationSystem 
 } from './components/NotificationSystem';
 import { 
@@ -86,14 +83,9 @@ export default function App() {
   const [logs, setLogs] = useState<ActivityLog[]>(INITIAL_ACTIVITY_LOGS);
   const [notifications, setNotifications] = useState<NotificationAlert[]>(INITIAL_NOTIFICATIONS);
 
-  // Cart State
-  const [cartItems, setCartItems] = useState<OrderItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-
   // Modals & Panels State
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [editingImageProduct, setEditingImageProduct] = useState<Product | null>(null);
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -186,39 +178,6 @@ export default function App() {
     setLogs((prev) => [newLog, ...prev]);
   };
 
-  // Cart Handlers
-  const handleAddToCart = (product: Product) => {
-    setCartItems((prev) => {
-      const existing = prev.find((item) => item.productId === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.productId === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      }
-      return [
-        ...prev,
-        {
-          productId: product.id,
-          title: product.title,
-          price: product.price,
-          quantity: 1,
-          image: product.image,
-        },
-      ];
-    });
-    setIsCartOpen(true);
-  };
-
-  const handleUpdateCartQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      setCartItems((prev) => prev.filter((it) => it.productId !== productId));
-    } else {
-      setCartItems((prev) =>
-        prev.map((it) => (it.productId === productId ? { ...it, quantity } : it))
-      );
-    }
-  };
-
   // Product Admin Actions
   const handleAddProduct = (newProd: Omit<Product, 'id'>) => {
     const created: Product = {
@@ -299,7 +258,6 @@ export default function App() {
     return 0;
   });
 
-  const cartTotal = cartItems.reduce((acc, it) => acc + it.price * it.quantity, 0);
   const unreadNotificationsCount = notifications.filter((n) => !n.read).length;
 
   return (
@@ -311,8 +269,6 @@ export default function App() {
         setDarkMode={setDarkMode}
         isAdmin={isAdmin}
         setIsAdmin={setIsAdmin}
-        cartCount={cartItems.reduce((acc, i) => acc + i.quantity, 0)}
-        onOpenCart={() => setIsCartOpen(true)}
         onOpenAdmin={() => (isAdmin ? setIsAdminOpen(true) : setIsAuthModalOpen(true))}
         onOpenChat={() => setIsChatOpen(true)}
         unreadNotifications={unreadNotificationsCount}
@@ -364,7 +320,6 @@ export default function App() {
               key={product.id}
               product={product}
               onSelectProduct={(p) => setSelectedProduct(p)}
-              onAddToCart={(p) => handleAddToCart(p)}
               onEditImage={(p) => setEditingImageProduct(p)}
               onSubscribePriceDrop={(p) => {
                 const newNotif: NotificationAlert = {
@@ -395,91 +350,11 @@ export default function App() {
 
       </main>
 
-      {/* Shopping Cart Drawer Side Overlay */}
-      {isCartOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/70 backdrop-blur-xs animate-fadeIn">
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 h-full flex flex-col justify-between shadow-2xl border-l border-slate-200 dark:border-slate-800">
-            
-            <div className="p-4 bg-emerald-700 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-emerald-200" />
-                <h3 className="font-extrabold text-sm">Tu Carrito de Mercado Pago</h3>
-              </div>
-              <button onClick={() => setIsCartOpen(false)} className="p-1 rounded-full text-emerald-200 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-4 overflow-y-auto flex-1 space-y-3">
-              {cartItems.length === 0 ? (
-                <div className="text-center py-12 space-y-2">
-                  <ShoppingBag className="w-10 h-10 text-slate-300 mx-auto" />
-                  <p className="text-xs text-slate-400">Tu carrito está vacío</p>
-                </div>
-              ) : (
-                cartItems.map((item) => (
-                  <div key={item.productId} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs">
-                    <div className="flex items-center gap-3">
-                      <img src={item.image} alt="" className="w-12 h-12 rounded-xl object-cover" />
-                      <div>
-                        <span className="font-bold text-slate-900 dark:text-white block max-w-[180px] truncate">{item.title}</span>
-                        <span className="text-emerald-600 font-extrabold">${item.price}.00 MXN</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleUpdateCartQuantity(item.productId, item.quantity - 1)}
-                        className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-700 font-bold flex items-center justify-center"
-                      >
-                        -
-                      </button>
-                      <span className="font-bold">{item.quantity}</span>
-                      <button
-                        onClick={() => handleUpdateCartQuantity(item.productId, item.quantity + 1)}
-                        className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-700 font-bold flex items-center justify-center"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {cartItems.length > 0 && (
-              <div className="p-4 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 space-y-3">
-                <div className="flex justify-between text-sm font-black">
-                  <span>Total Pedido:</span>
-                  <span className="text-emerald-600 dark:text-emerald-400">${cartTotal}.00 MXN</span>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setIsCartOpen(false);
-                    setIsCheckoutOpen(true);
-                  }}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-xl text-sm shadow-lg"
-                >
-                  Procesar Pago Seguro con Mercado Pago
-                </button>
-              </div>
-            )}
-
-          </div>
-        </div>
-      )}
-
       {/* Modal Components */}
       {selectedProduct && (
         <ProductDetailModal
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
-          onAddToCart={handleAddToCart}
-          onOpenCheckoutWithItem={(prod) => {
-            handleAddToCart(prod);
-            setIsCheckoutOpen(true);
-          }}
           reviews={reviews}
           onAddReview={handleAddReview}
           onEditImage={(p) => setEditingImageProduct(p)}
@@ -508,15 +383,6 @@ export default function App() {
           }
         }}
       />
-
-      {isCheckoutOpen && (
-        <CheckoutModal
-          items={cartItems}
-          onClose={() => setIsCheckoutOpen(false)}
-          onSuccessOrder={handleSuccessOrder}
-          onClearCart={() => setCartItems([])}
-        />
-      )}
 
       {isAdminOpen && (
         <AdminDashboard

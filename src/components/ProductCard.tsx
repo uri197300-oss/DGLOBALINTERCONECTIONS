@@ -16,7 +16,6 @@ import { Product } from '../types';
 interface ProductCardProps {
   product: Product;
   onSelectProduct: (product: Product) => void;
-  onAddToCart: (product: Product) => void;
   onSubscribePriceDrop: (product: Product) => void;
   onEditImage?: (product: Product) => void;
 }
@@ -24,7 +23,6 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({
   product,
   onSelectProduct,
-  onAddToCart,
   onSubscribePriceDrop,
   onEditImage
 }) => {
@@ -148,27 +146,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </button>
           </div>
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-1.5">
-            {/* Direct Mercado Libre Redirect */}
+          {/* Direct Mercado Libre Redirect Button */}
+          <div>
             <a
               href={product.mercadoLibreUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-black py-1.5 px-2 rounded-md text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 shadow-sm transition-all"
+              className="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-black py-2 px-3 rounded-lg text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md shadow-yellow-500/20 transition-all hover:scale-[1.02]"
             >
-              <span>BUY ON ML</span>
-              <ExternalLink className="w-3 h-3" />
+              <span>Comprar en Mercado Libre</span>
+              <ExternalLink className="w-3.5 h-3.5" />
             </a>
-
-            {/* Local Cart Add / Quick Order */}
-            <button
-              onClick={() => onAddToCart(product)}
-              className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold py-1.5 px-2 rounded-md text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 transition-all"
-            >
-              <ShoppingBag className="w-3 h-3 text-yellow-400" />
-              <span>Agregar</span>
-            </button>
           </div>
 
         </div>

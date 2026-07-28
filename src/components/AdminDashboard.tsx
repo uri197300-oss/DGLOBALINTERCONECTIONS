@@ -765,7 +765,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         placeholder="Ej. SABILA15"
                         className="w-full bg-white dark:bg-slate-800 border rounded-xl p-2.5 font-bold uppercase text-amber-600 dark:text-amber-400"
                       />
-                      <p className="text-[10px] text-slate-500 mt-1">Los clientes podrán usar este cupón en su carrito.</p>
+                      <p className="text-[10px] text-slate-500 mt-1">Los clientes recibirán este cupón para sus promociones exclusivas.</p>
                     </div>
                   </div>
 
