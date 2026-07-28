@@ -74,14 +74,62 @@ export default function App() {
   // Application Global States
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isAdmin, setIsAdmin] = useState<boolean>(false); // Hidden by default; only unlocked upon logging in as admin
-  const [registeredUsers, setRegisteredUsers] = useState<RegisteredUser[]>(INITIAL_REGISTERED_USERS);
+  const [registeredUsers, setRegisteredUsers] = useState<RegisteredUser[]>(() => {
+    const saved = localStorage.getItem('dloraud_users');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {}
+    }
+    return INITIAL_REGISTERED_USERS;
+  });
   const [currentUser, setCurrentUser] = useState<RegisteredUser | null>(null);
 
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
+  const [products, setProducts] = useState<Product[]>(() => {
+    const saved = localStorage.getItem('dloraud_products');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {}
+    }
+    return INITIAL_PRODUCTS;
+  });
+
+  const [orders, setOrders] = useState<Order[]>(() => {
+    const saved = localStorage.getItem('dloraud_orders');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {}
+    }
+    return INITIAL_ORDERS;
+  });
+
   const [reviews, setReviews] = useState<Review[]>(INITIAL_REVIEWS);
   const [logs, setLogs] = useState<ActivityLog[]>(INITIAL_ACTIVITY_LOGS);
   const [notifications, setNotifications] = useState<NotificationAlert[]>(INITIAL_NOTIFICATIONS);
+
+  // Sync state to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('dloraud_products', JSON.stringify(products));
+    } catch (e) {}
+  }, [products]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('dloraud_users', JSON.stringify(registeredUsers));
+    } catch (e) {}
+  }, [registeredUsers]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('dloraud_orders', JSON.stringify(orders));
+    } catch (e) {}
+  }, [orders]);
 
   // Modals & Panels State
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -190,13 +238,23 @@ export default function App() {
 
   const handleUpdateProduct = (updatedProd: Product) => {
     setProducts((prev) => prev.map((p) => (p.id === updatedProd.id ? updatedProd : p)));
+    setSelectedProduct((prev) => (prev && prev.id === updatedProd.id ? updatedProd : prev));
+    setEditingImageProduct((prev) => (prev && prev.id === updatedProd.id ? updatedProd : prev));
     addActivityLog('PRODUCTO_ACTUALIZADO', `Modificación en ${updatedProd.title} (Precio $${updatedProd.price} MXN)`, 'inventory');
   };
 
   const handleDeleteProduct = (productId: string) => {
     const prod = products.find((p) => p.id === productId);
     setProducts((prev) => prev.filter((p) => p.id !== productId));
+    setSelectedProduct((prev) => (prev && prev.id === productId ? null : prev));
+    setEditingImageProduct((prev) => (prev && prev.id === productId ? null : prev));
     addActivityLog('PRODUCTO_ELIMINADO', `Eliminado del catálogo ID: ${productId} (${prod?.title})`, 'inventory');
+  };
+
+  const handleResetProducts = () => {
+    setProducts(INITIAL_PRODUCTS);
+    localStorage.removeItem('dloraud_products');
+    addActivityLog('CATALOGO_RESTABLECIDO', 'Catálogo de productos restablecido a valores por defecto', 'inventory');
   };
 
   // Order Handlers
@@ -320,7 +378,7 @@ export default function App() {
               key={product.id}
               product={product}
               onSelectProduct={(p) => setSelectedProduct(p)}
-              onEditImage={(p) => setEditingImageProduct(p)}
+              onEditImage={isAdmin ? (p) => setEditingImageProduct(p) : undefined}
               onSubscribePriceDrop={(p) => {
                 const newNotif: NotificationAlert = {
                   id: `notif-${Date.now()}`,
@@ -357,32 +415,34 @@ export default function App() {
           onClose={() => setSelectedProduct(null)}
           reviews={reviews}
           onAddReview={handleAddReview}
-          onEditImage={(p) => setEditingImageProduct(p)}
-          isAdmin={true}
+          onEditImage={isAdmin ? (p) => setEditingImageProduct(p) : undefined}
+          isAdmin={isAdmin}
         />
       )}
 
       {/* Global Image Edit Modal */}
-      <ImageEditModal
-        product={editingImageProduct}
-        isOpen={!!editingImageProduct}
-        onClose={() => setEditingImageProduct(null)}
-        onSaveImage={(productId, newImageUrl) => {
-          const target = products.find((p) => p.id === productId);
-          if (target) {
-            handleUpdateProduct({
-              ...target,
-              image: newImageUrl,
-            });
-            if (selectedProduct?.id === productId) {
-              setSelectedProduct({
-                ...selectedProduct,
+      {isAdmin && (
+        <ImageEditModal
+          product={editingImageProduct}
+          isOpen={!!editingImageProduct}
+          onClose={() => setEditingImageProduct(null)}
+          onSaveImage={(productId, newImageUrl) => {
+            const target = products.find((p) => p.id === productId);
+            if (target) {
+              handleUpdateProduct({
+                ...target,
                 image: newImageUrl,
               });
+              if (selectedProduct?.id === productId) {
+                setSelectedProduct({
+                  ...selectedProduct,
+                  image: newImageUrl,
+                });
+              }
             }
-          }
-        }}
-      />
+          }}
+        />
+      )}
 
       {isAdminOpen && (
         <AdminDashboard
@@ -397,6 +457,7 @@ export default function App() {
           onDeleteProduct={handleDeleteProduct}
           onUpdateOrderStatus={handleUpdateOrderStatus}
           onSendPromoBroadcast={handleSendPromoBroadcast}
+          onResetProducts={handleResetProducts}
         />
       )}
 

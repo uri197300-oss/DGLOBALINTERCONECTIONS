@@ -59,6 +59,7 @@ interface AdminDashboardProps {
   onDeleteProduct: (productId: string) => void;
   onUpdateOrderStatus: (orderId: string, status: OrderStatus, trackingNumber?: string) => void;
   onSendPromoBroadcast?: (title: string, subject: string, message: string, couponCode?: string) => void;
+  onResetProducts?: () => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -73,6 +74,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onDeleteProduct,
   onUpdateOrderStatus,
   onSendPromoBroadcast,
+  onResetProducts,
 }) => {
   const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'analytics' | 'logs' | 'users' | 'promotions'>('inventory');
 
@@ -101,6 +103,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [isKosher, setIsKosher] = useState(true);
   const [isAloineFree, setIsAloineFree] = useState(true);
   const [description, setDescription] = useState('');
+  const [benefitsStr, setBenefitsStr] = useState('');
+  const [badgesStr, setBadgesStr] = useState('');
+  const [featured, setFeatured] = useState(false);
+  const [isSpecialOffer, setIsSpecialOffer] = useState(false);
 
   const handleSaveProductImage = (productId: string, newImageUrl: string) => {
     const targetProd = products.find((p) => p.id === productId);
@@ -140,6 +146,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setIsKosher(true);
     setIsAloineFree(true);
     setDescription('Descripción oficial de producto para Mercado Libre...');
+    setBenefitsStr('Sin Aloína, Garantía Mercado Libre, 100% Natural');
+    setBadgesStr('Nuevo');
+    setFeatured(true);
+    setIsSpecialOffer(false);
     setShowProductModal(true);
   };
 
@@ -154,13 +164,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setMercadoLibreUrl(prod.mercadoLibreUrl);
     setIsKosher(prod.isKosher);
     setIsAloineFree(prod.isAloineFree);
-    setDescription(prod.description);
+    setDescription(prod.description || '');
+    setBenefitsStr((prod.benefits || []).join(', '));
+    setBadgesStr((prod.badges || []).join(', '));
+    setFeatured(!!prod.featured);
+    setIsSpecialOffer(!!prod.isSpecialOffer);
     setShowProductModal(true);
   };
 
   const handleSaveProduct = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) return;
+
+    const benefitsArray = benefitsStr
+      .split(',')
+      .map((b) => b.trim())
+      .filter(Boolean);
+
+    const badgesArray = badgesStr
+      .split(',')
+      .map((b) => b.trim())
+      .filter(Boolean);
 
     if (editingProduct) {
       onUpdateProduct({
@@ -175,6 +199,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         isKosher,
         isAloineFree,
         description,
+        benefits: benefitsArray.length > 0 ? benefitsArray : editingProduct.benefits,
+        badges: badgesArray.length > 0 ? badgesArray : editingProduct.badges,
+        featured,
+        isSpecialOffer,
       });
     } else {
       onAddProduct({
@@ -187,12 +215,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         image: image || 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80&w=800',
         mercadoLibreUrl: mercadoLibreUrl || 'https://listado.mercadolibre.com.mx/_CustId_685476429',
         stock,
-        benefits: ['Sin Aloína', 'Garantía Mercado Libre', '100% Natural'],
+        benefits: benefitsArray.length > 0 ? benefitsArray : ['Sin Aloína', 'Garantía Mercado Libre', '100% Natural'],
         isKosher,
         isAloineFree,
-        featured: true,
-        isSpecialOffer: false,
-        badges: ['Nuevo'],
+        featured,
+        isSpecialOffer,
+        badges: badgesArray.length > 0 ? badgesArray : ['Nuevo'],
         description,
         specifications: { 'Garantía': 'Mercado Libre 30 días' },
       });
@@ -357,13 +385,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </p>
                 </div>
 
-                <button
-                  onClick={handleOpenAddModal}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-md"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Agregar Nuevo Producto</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  {onResetProducts && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm('¿Deseas restablecer el catálogo de productos a la configuración de fábrica?')) {
+                          onResetProducts();
+                        }
+                      }}
+                      className="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs px-3 py-2.5 rounded-xl flex items-center gap-1.5 transition-colors"
+                      title="Restablecer a productos iniciales"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Restablecer</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={handleOpenAddModal}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-md"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Agregar Nuevo Producto</span>
+                  </button>
+                </div>
               </div>
 
               {/* Products Grid Table */}
@@ -965,6 +1010,39 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
 
               <div>
+                <label className="block font-bold mb-1">Descripción Completa del Producto:</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  placeholder="Escribe la descripción detallada del producto..."
+                  className="w-full bg-slate-100 dark:bg-slate-800 border rounded-xl p-2.5 text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold mb-1">Beneficios (separados por comas):</label>
+                <input
+                  type="text"
+                  value={benefitsStr}
+                  onChange={(e) => setBenefitsStr(e.target.value)}
+                  placeholder="Ej. Sin Aloína, 100% Orgánico, Envío Rápido"
+                  className="w-full bg-slate-100 dark:bg-slate-800 border rounded-xl p-2.5 text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold mb-1">Etiquetas/Badges (separados por comas):</label>
+                <input
+                  type="text"
+                  value={badgesStr}
+                  onChange={(e) => setBadgesStr(e.target.value)}
+                  placeholder="Ej. Más Vendido, Nuevo, Oferta Especial"
+                  className="w-full bg-slate-100 dark:bg-slate-800 border rounded-xl p-2.5 text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div>
                 <label className="block font-bold mb-1">URL Enlace Mercado Libre:</label>
                 <input
                   type="text"
@@ -974,7 +1052,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 />
               </div>
 
-              <div className="flex gap-4 pt-1">
+              <div className="grid grid-cols-2 gap-2 pt-1">
                 <label className="flex items-center gap-1.5 font-bold cursor-pointer">
                   <input
                     type="checkbox"
@@ -991,6 +1069,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     onChange={(e) => setIsAloineFree(e.target.checked)}
                   />
                   <span>Sin Aloína</span>
+                </label>
+
+                <label className="flex items-center gap-1.5 font-bold cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={featured}
+                    onChange={(e) => setFeatured(e.target.checked)}
+                  />
+                  <span>Destacado en Tienda</span>
+                </label>
+
+                <label className="flex items-center gap-1.5 font-bold cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isSpecialOffer}
+                    onChange={(e) => setIsSpecialOffer(e.target.checked)}
+                  />
+                  <span>Oferta Especial</span>
                 </label>
               </div>
 
